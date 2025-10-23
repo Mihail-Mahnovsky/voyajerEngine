@@ -18,18 +18,11 @@ RenderBuffer :: struct{
     CharBuffer :[]byte
 }
 
-CubeConfig :: struct{
-    size : f64,
-    width : f64,
-    incrementSpeed : f64,
-    distance : i32,
-    backgroundChar : byte
-}
-
 Render :: struct {
     renBuf : RenderBuffer,
     rotAng : RotateAngeles,
     cube : CubeConfig,
+    obj : ObjConfig,
     horizontalOffset : f64
 }
 
@@ -44,10 +37,11 @@ newRender :: proc() -> Render{
         cube = CubeConfig{
             size = 40,
             width = 10,
-            incrementSpeed = 0.75,
+            incrementSpeed = 0.89,
             distance = 100,
             backgroundChar = ' '
-        }
+        },
+        obj = loadObj("../res/monkey.obj"),
     }
 }
 
@@ -84,7 +78,7 @@ clearSurface :: proc(rn : ^Render) {
     }
 }
 
-renderFrame :: proc(rn : ^Render){
+renderCubeFrame :: proc(rn : ^Render){
     clearSurface(rn)
     cw := rn^.cube.width
 
@@ -100,6 +94,12 @@ renderFrame :: proc(rn : ^Render){
     }
 }
 
+renderObjFrame :: proc(rn : ^Render){
+    for vertex in rn^.obj.vertices {
+        renderSurface(rn, vertex.x, vertex.y, vertex.z, '@')
+    }
+}
+
 updateRotation :: proc(rn : ^Render){
     rn^.rotAng.angs.x += rn^.cube.incrementSpeed * 0.02
     rn^.rotAng.angs.y += rn^.cube.incrementSpeed * 0.01
@@ -108,7 +108,7 @@ updateRotation :: proc(rn : ^Render){
 
 renderLoop :: proc(rn : ^Render){
     for {
-        renderFrame(rn)
+        renderObjFrame(rn)
 
         for y : i32 = 0; y < rn^.renBuf.height; y += 1 {
             start := y * rn^.renBuf.width
